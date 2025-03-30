@@ -11,6 +11,8 @@ module "aws" {
   gatus_version       = var.gatus_version
   gatus_interval      = var.gatus_interval
   cidr                = var.aws_cidr
+  local_user          = var.local_user
+  local_user_password = var.local_user_password
   dashboard           = var.dashboard
   dashboard_access_ip = var.dashboard_access_ip != null ? var.dashboard_access_ip : "${chomp(data.http.my_ip.response_body)}/32"
 }

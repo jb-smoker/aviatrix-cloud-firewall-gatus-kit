@@ -1,10 +1,4 @@
 #! /bin/bash
-# Add student user
-sudo adduser gatus
-sudo echo "gatus:Aviatrix123#" | sudo /usr/sbin/chpasswd
-sudo sed -i'' -e 's+\%sudo.*+\%sudo  ALL=(ALL) NOPASSWD: ALL+g' /etc/sudoers
-sudo usermod -aG sudo gatus
-sudo service sshd restart
 # Set logging
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 # Update packages

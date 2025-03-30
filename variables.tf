@@ -70,6 +70,16 @@ variable "gatus_endpoints" {
   }
 }
 
+variable "local_user" {
+  description = "Local user to create on the gatus instances"
+  type        = string
+}
+
+variable "local_user_password" {
+  description = "Password for the local user on the gatus instances"
+  type        = string
+}
+
 variable "dashboard" {
   description = "Create a dashboard to expose gatus status to the Internet"
   type        = bool

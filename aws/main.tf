@@ -69,6 +69,8 @@ module "gatus_instances" {
   user_data = templatefile("${path.module}/../templates/gatus.tpl",
     {
       name     = "gatus-az${each.value + 1}"
+      user     = var.local_user
+      password = var.local_user_password
       https    = var.gatus_endpoints.https
       http     = var.gatus_endpoints.http
       tcp      = var.gatus_endpoints.tcp

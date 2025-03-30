@@ -1,10 +1,11 @@
 #! /bin/bash
 sudo grep -r PasswordAuthentication /etc/ssh -l | xargs -n 1 sudo sed -i 's/#\s*PasswordAuthentication\s.*$/PasswordAuthentication yes/; s/^PasswordAuthentication\s*no$/PasswordAuthentication yes/'
-# Add student user
-sudo adduser gatus
-sudo echo "gatus:Aviatrix123#" | sudo /usr/sbin/chpasswd
+# Add local user
+sudo grep -r PasswordAuthentication /etc/ssh -l | xargs -n 1 sudo sed -i 's/#\s*PasswordAuthentication\s.*$/PasswordAuthentication yes/; s/^PasswordAuthentication\s*no$/PasswordAuthentication yes/'
+sudo adduser ${user}
+sudo echo "${user}:${password}" | sudo /usr/sbin/chpasswd
 sudo sed -i'' -e 's+\%sudo.*+\%sudo  ALL=(ALL) NOPASSWD: ALL+g' /etc/sudoers
-sudo usermod -aG sudo gatus
+sudo usermod -aG sudo ${user}
 sudo service sshd restart
 # Set logging
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
