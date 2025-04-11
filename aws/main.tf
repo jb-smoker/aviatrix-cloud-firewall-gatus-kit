@@ -1,3 +1,5 @@
+data "aws_regions" "available" {}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.13.0"
@@ -37,7 +39,7 @@ resource "aws_security_group_rule" "this_dashboard" {
   from_port         = 80
   to_port           = 80
   protocol          = "tcp"
-  cidr_blocks       = [var.dashboard_access_ip]
+  cidr_blocks       = [var.dashboard_access_cidr]
   security_group_id = aws_security_group.this.id
 }
 
@@ -55,11 +57,11 @@ data "aws_ssm_parameter" "ubuntu_ami" {
   name = "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
 }
 
-module "gatus_instances" {
-  for_each = toset(formatlist("%d", range(var.number_of_subnets)))
+module "gatus" {
+  for_each = toset(formatlist("%d", range(var.number_of_instances)))
   source   = "terraform-aws-modules/ec2-instance/aws"
 
-  name = "aviatrix-gatus-az${each.value + 1}"
+  name = "aviatrix-aws-gatus-az${each.value + 1}"
 
   instance_type          = "t3.micro"
   vpc_security_group_ids = [aws_security_group.this.id]
@@ -68,7 +70,7 @@ module "gatus_instances" {
 
   user_data = templatefile("${path.module}/../templates/gatus.tpl",
     {
-      name     = "gatus-az${each.value + 1}"
+      name     = "aviatrix-aws-gatus-az${each.value + 1}"
       user     = var.local_user
       password = var.local_user_password
       https    = var.gatus_endpoints.https
@@ -85,7 +87,7 @@ module "dashboard" {
   count  = var.dashboard ? 1 : 0
   source = "terraform-aws-modules/ec2-instance/aws"
 
-  name = "aviatrix-gatus-dashboard"
+  name = "aviatrix-aws-gatus-dashboard"
 
   instance_type               = "t3.micro"
   vpc_security_group_ids      = [aws_security_group.this.id]
@@ -96,8 +98,8 @@ module "dashboard" {
   user_data = templatefile("${path.module}/../templates/dashboard.tpl",
     {
       cloud     = "aws"
-      instances = [for instance in module.gatus_instances : instance.private_ip]
+      instances = [for instance in module.gatus : instance.private_ip]
       version   = var.gatus_version
   })
-  depends_on = [module.gatus_instances]
+  depends_on = [module.gatus]
 }

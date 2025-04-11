@@ -36,7 +36,7 @@ resource "azurerm_route_table" "private" {
 
 module "vnet" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "0.7.1"
+  version = "0.8.1"
 
   address_space       = [var.cidr]
   location            = azurerm_resource_group.this.location
@@ -45,7 +45,7 @@ module "vnet" {
 }
 
 resource "azurerm_subnet" "public" {
-  count                           = var.number_of_subnets
+  count                           = var.number_of_instances
   name                            = "public-${count.index + 1}"
   resource_group_name             = azurerm_resource_group.this.name
   virtual_network_name            = module.vnet.name
@@ -54,13 +54,13 @@ resource "azurerm_subnet" "public" {
 }
 
 resource "azurerm_subnet_route_table_association" "public" {
-  count          = var.number_of_subnets
+  count          = var.number_of_instances
   subnet_id      = azurerm_subnet.public[count.index].id
   route_table_id = azurerm_route_table.public.id
 }
 
 resource "azurerm_subnet" "private" {
-  count                           = var.number_of_subnets
+  count                           = var.number_of_instances
   name                            = "private-${count.index + 1}"
   resource_group_name             = azurerm_resource_group.this.name
   virtual_network_name            = module.vnet.name
@@ -69,13 +69,13 @@ resource "azurerm_subnet" "private" {
 }
 
 resource "azurerm_subnet_route_table_association" "private" {
-  count          = var.number_of_subnets
+  count          = var.number_of_instances
   subnet_id      = azurerm_subnet.private[count.index].id
   route_table_id = azurerm_route_table.private.id
 }
 
 resource "azurerm_subnet_nat_gateway_association" "this" {
-  count          = var.number_of_subnets
+  count          = var.number_of_instances
   subnet_id      = azurerm_subnet.private[count.index].id
   nat_gateway_id = azurerm_nat_gateway.this.id
 }
@@ -83,34 +83,61 @@ resource "azurerm_subnet_nat_gateway_association" "this" {
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "~> 0.4"
+  count   = var.number_of_instances + 1
 }
 
-module "gatus_instances" {
-  count               = var.number_of_subnets
+
+data "cloudinit_config" "gatus" {
+  count         = var.number_of_instances
+  gzip          = false
+  base64_encode = true
+
+  part {
+    content_type = "text/x-shellscript"
+    content = templatefile("${path.module}/../templates/gatus.tpl",
+      {
+        name     = "aviatrix-azure-gatus-az${count.index + 1}"
+        user     = var.local_user
+        password = var.local_user_password
+        https    = var.gatus_endpoints.https
+        http     = var.gatus_endpoints.http
+        tcp      = var.gatus_endpoints.tcp
+        icmp     = var.gatus_endpoints.icmp
+        interval = var.gatus_interval
+        version  = var.gatus_version
+    })
+  }
+}
+
+module "gatus" {
+  count               = var.number_of_instances
   source              = "Azure/avm-res-compute-virtualmachine/azurerm"
   version             = "0.18.0"
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
-  name                = "gatus-az${count.index + 1}"
-  admin_username      = "adminuser"
-  admin_password      = "P@ssw0rd1234!" # Use a more secure password or SSH key
+  name                = "aviatrix-azure-gatus-az${count.index + 1}"
+  admin_username      = var.local_user
+  admin_password      = var.local_user_password
+  user_data           = data.cloudinit_config.gatus[count.index].rendered
+  os_type             = "Linux"
   os_disk = {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
   source_image_reference = {
     publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-focal"
-    sku       = "24_04-lts-gen2"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "server"
     version   = "latest"
   }
-  zone = count.index + 1
+  encryption_at_host_enabled = false
+  zone                       = count.index + 1
   network_interfaces = {
     network_interface_1 = {
-      name = module.naming.network_interface.name_unique
+      name = module.naming[count.index].network_interface.name_unique
       ip_configurations = {
         ip_configuration_1 = {
-          name                          = "${module.naming.network_interface.name_unique}-ipconfig1"
+          name                          = "${module.naming[count.index].network_interface.name_unique}-ipconfig1"
           private_ip_subnet_resource_id = azurerm_subnet.private[count.index].id
         }
       }
@@ -118,53 +145,104 @@ module "gatus_instances" {
   }
 }
 
-# module "az_gatus1" {
-#   for_each       = toset(local.cps)
-#   source         = "github.com/aviatrix-internal-only-org/avxlabs-mc-instance"
-#   name           = "${each.value}-egress-az1"
-#   resource_group = azurerm_resource_group.paas.name
-#   subnet_id      = module.vnet[each.value].subnets["subnet1"].resource_id
-#   location       = azurerm_resource_group.this.location
-#   cloud          = "azure"
-#   instance_size  = "Standard_B1ms"
-#   public_key     = local.tfvars.ssh_public_key
-#   password       = local.tfvars.workload_instance_password
-#   private_ip     = "10.2.${index(local.cps, each.value) + 1}.10"
+data "cloudinit_config" "dashboard" {
+  gzip          = false
+  base64_encode = true
 
-#   user_data_templatefile = templatefile("${path.module}/templates/egress.tpl",
-#     {
-#       name     = "${each.value}-egress-az1"
-#       https    = local.https
-#       http     = local.http
-#       password = local.tfvars.workload_instance_password
-#       interval = "5"
-#   })
-# }
+  part {
+    content_type = "text/x-shellscript"
+    content = templatefile("${path.module}/../templates/dashboard.tpl",
+      {
+        cloud     = "azure"
+        instances = [for instance in module.gatus : instance.virtual_machine_azurerm.private_ip_addresses[0]]
+        version   = var.gatus_version
+    })
+  }
+}
 
-# module "az_gatus_dashboard" {
-#   for_each       = toset(local.cps)
-#   source         = "github.com/aviatrix-internal-only-org/avxlabs-mc-instance?ref=v1.0.9"
-#   name           = "${each.value}-dashboard"
-#   resource_group = azurerm_resource_group.paas.name
-#   subnet_id      = module.vnet[each.value].subnets["subnet4"].resource_id
-#   location       = azurerm_resource_group.this.location
-#   cloud          = "azure"
-#   public_key     = local.tfvars.ssh_public_key
-#   password       = local.tfvars.workload_instance_password
-#   instance_size  = "Standard_B1ms"
-#   common_tags    = {}
-#   public_ip      = true
-#   inbound_tcp = {
-#     22  = ["${chomp(data.http.myip.response_body)}/32"]
-#     443 = [module.nginx.public_ip]
-#   }
+module "dashboard" {
+  count               = var.dashboard ? 1 : 0
+  source              = "Azure/avm-res-compute-virtualmachine/azurerm"
+  version             = "0.18.0"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  name                = "aviatrix-azure-gatus-dashboard"
+  admin_username      = var.local_user
+  admin_password      = var.local_user_password
+  user_data           = data.cloudinit_config.dashboard.rendered
+  os_type             = "Linux"
+  os_disk = {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+  source_image_reference = {
+    publisher = "Canonical"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "server"
+    version   = "latest"
+  }
+  encryption_at_host_enabled = false
+  zone                       = 1
 
-#   user_data_templatefile = templatefile("${path.module}/templates/dashboard.tpl",
-#     {
-#       name      = "${each.value}-dashboard"
-#       gatus     = each.value
-#       instances = ["${module.az_gatus1[each.value].private_ip}", "${module.az_gatus2[each.value].private_ip}", "${module.az_gatus3[each.value].private_ip}"]
-#       pwd       = local.tfvars.workload_instance_password
-#       cloud     = "Azure"
-#   })
-# }
+  network_interfaces = {
+
+    network_interface_1 = {
+      name = module.naming[var.number_of_instances].network_interface.name_unique
+      ip_configurations = {
+        ip_configuration_1 = {
+          name                          = "${module.naming[var.number_of_instances].network_interface.name_unique}-ipconfig1"
+          private_ip_subnet_resource_id = azurerm_subnet.public[0].id
+          create_public_ip_address      = true
+          public_ip_address_name        = module.naming[var.number_of_instances].public_ip.name_unique
+        }
+      }
+    }
+  }
+}
+
+resource "azurerm_network_security_group" "this" {
+  name                = "aviatrix-security-group"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+}
+
+resource "azurerm_network_interface_security_group_association" "this_gatus" {
+  count                     = var.number_of_instances
+  network_interface_id      = module.gatus[count.index].network_interfaces.network_interface_1.id
+  network_security_group_id = azurerm_network_security_group.this.id
+}
+
+resource "azurerm_network_interface_security_group_association" "this_dashboard" {
+  count                     = var.dashboard ? 1 : 0
+  network_interface_id      = module.dashboard[0].network_interfaces.network_interface_1.id
+  network_security_group_id = azurerm_network_security_group.this.id
+}
+
+resource "azurerm_network_security_rule" "this_rfc_1918" {
+  access                      = "Allow"
+  direction                   = "Inbound"
+  name                        = "rfc-1918"
+  priority                    = 100
+  protocol                    = "*"
+  source_port_range           = "*"
+  source_address_prefixes     = ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+  destination_port_range      = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.this.name
+  network_security_group_name = azurerm_network_security_group.this.name
+}
+
+resource "azurerm_network_security_rule" "this_inbound_tcp" {
+  count                       = var.dashboard ? 1 : 0
+  access                      = "Allow"
+  direction                   = "Inbound"
+  name                        = "inbound_tcp_80"
+  priority                    = 101
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefixes     = [var.dashboard_access_cidr]
+  destination_port_range      = 80
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.this.name
+  network_security_group_name = azurerm_network_security_group.this.name
+}

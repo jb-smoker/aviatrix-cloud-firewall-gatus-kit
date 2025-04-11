@@ -36,7 +36,7 @@ sudo cat >> config.yaml << EOL
         ignore-redirect: false
         timeout: 10s
       interval: ${interval}s
-      group: "https: $(echo ${name} | sed 's/^[^-]*-//')"
+      group: "$(echo ${name} | sed 's/^[^-]*-//')"
       conditions:
       - "[STATUS] == 200"
 %{ endfor ~}
@@ -48,7 +48,7 @@ sudo cat >> config.yaml << EOL
         ignore-redirect: false
         timeout: 10s
       interval: ${interval}s
-      group: "http: $(echo ${name} | sed 's/^[^-]*-//')"
+      group: "$(echo ${name} | sed 's/^[^-]*-//')"
       conditions:
       - "[STATUS] == 200"
 %{ endfor ~}
@@ -60,7 +60,7 @@ sudo cat >> config.yaml << EOL
         ignore-redirect: false
         timeout: 10s
       interval: ${interval}s
-      group: "icmp: $(echo ${name} | sed 's/^[^-]*-//')"
+      group: "$(echo ${name} | sed 's/^[^-]*-//')"
       conditions:
       - "[CONNTECTED] == true"
 %{ endfor ~}
@@ -72,7 +72,7 @@ sudo cat >> config.yaml << EOL
         ignore-redirect: false
         timeout: 10s
       interval: ${interval}s
-      group: "tcp: $(echo "${name}" | sed 's/^[^-]*-//'"
+      group: "$(echo "${name}" | sed 's/^[^-]*-//'"
       conditions:
       - "[CONNTECTED] == true"
 %{ endfor ~}
