@@ -1,7 +1,6 @@
 variable "clouds" {
   description = "Deploy gatus workloads to these cloud provider(s)."
   type        = list(string)
-  default     = []
   validation {
     condition = length([
       for cloud in var.clouds : true
@@ -21,7 +20,7 @@ variable "aws_region" {
 variable "azure_region" {
   description = "Azure region."
   type        = string
-  default     = "region"
+  default     = null
 }
 
 variable "number_of_instances" {

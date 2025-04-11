@@ -1,9 +1,11 @@
 output "aws_dashboard_public_ip" {
-  value = contains([for s in var.clouds : lower(s)], "aws") ? module.aws["aws"].dashboard_public_ip : null
+  description = "Aws Gatus Dasboard Public IP"
+  value       = contains([for s in var.clouds : lower(s)], "aws") ? module.aws["aws"].dashboard_public_ip : null
 }
 
 output "azure_dashboard_public_ip" {
-  value = contains([for s in var.clouds : lower(s)], "azure") ? module.azure["azure"].dashboard_public_ip : null
+  description = "Azure Gatus Dasboard Public IP"
+  value       = contains([for s in var.clouds : lower(s)], "azure") ? module.azure["azure"].dashboard_public_ip : null
 }
 
 output "local_user_password" {

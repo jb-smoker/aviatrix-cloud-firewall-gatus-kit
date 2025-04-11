@@ -31,7 +31,7 @@ module "aws" {
 module "azure" {
   for_each              = contains([for s in var.clouds : lower(s)], "azure") ? toset(["azure"]) : toset([])
   source                = "./azure"
-  region                = var.azure_region
+  region                = var.azure_region == null ? "region_placeholder" : var.azure_region
   number_of_instances   = var.number_of_instances
   gatus_endpoints       = var.gatus_endpoints
   gatus_version         = var.gatus_version
