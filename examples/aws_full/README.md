@@ -1,6 +1,6 @@
 # Aws example with all input variables
 
-In this example, the module deploys the transit VNET as well as a HA pair of Aviatrix transit gateways.
+An Aws-only example with all input variables defined.
 
 ```hcl
 variable "aws_region" { default = "us-east-1" }

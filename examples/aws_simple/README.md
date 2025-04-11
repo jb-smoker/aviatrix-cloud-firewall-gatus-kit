@@ -1,6 +1,6 @@
 # Aws example with no optional input variables
 
-In this example, the module deploys the transit VPC, a new BGP over LAN VPC, and attaches to an existing BGP over LAN VPC.
+An Aws-only example with no optional input variables defined.
 
 ```hcl
 variable "aws_region" { default = "us-east-1" }

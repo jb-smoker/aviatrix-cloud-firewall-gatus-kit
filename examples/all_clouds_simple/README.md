@@ -1,6 +1,6 @@
 # All supported clouds example with no optional input variables
 
-In this example, the mc-transit module deploys just a HA pair of Aviatrix transit gateways in a VPC created externally.
+An example of all supported clouds with no optional input variables defined.
 
 ```hcl
 variable "aws_region" { default = "us-east-1" }

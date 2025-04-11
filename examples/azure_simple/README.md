@@ -1,6 +1,6 @@
 # Azure example with no optional input variables
 
-Azure-only with no optional input variables
+An Azure-only example with no optional input variables defined.
 
 ```hcl
 variable "azure_region" { default = "East US" }
