@@ -1,6 +1,21 @@
+data "http" "my_ip" {
+  url = "https://ipv4.icanhazip.com"
+}
+
+resource "random_password" "password" {
+  count            = var.local_user_password == null ? 1 : 0
+  length           = 12           # Password length
+  special          = true         # Include special characters
+  override_special = "!#$%&*-_=+" # Specify which special characters to include
+  min_lower        = 2            # Minimum lowercase characters
+  min_upper        = 2            # Minimum uppercase characters
+  min_numeric      = 2            # Minimum numeric characters
+  min_special      = 2            # Minimum special characters
+}
+
 resource "azurerm_resource_group" "this" {
   name     = "aviatrix"
-  location = var.region
+  location = var.azure_region
 }
 
 resource "azurerm_nat_gateway" "this" {
@@ -38,7 +53,7 @@ module "vnet" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
   version = "0.8.1"
 
-  address_space       = [var.cidr]
+  address_space       = [var.azure_cidr]
   location            = azurerm_resource_group.this.location
   name                = "aviatrix"
   resource_group_name = azurerm_resource_group.this.name
@@ -94,11 +109,11 @@ data "cloudinit_config" "gatus" {
 
   part {
     content_type = "text/x-shellscript"
-    content = templatefile("${path.module}/../templates/gatus.tpl",
+    content = templatefile("${path.module}/templates/gatus.tpl",
       {
         name     = "aviatrix-azure-gatus-az${count.index + 1}"
         user     = var.local_user
-        password = var.local_user_password
+        password = var.local_user_password != null ? var.local_user_password : random_password.password[0].result
         https    = var.gatus_endpoints.https
         http     = var.gatus_endpoints.http
         tcp      = var.gatus_endpoints.tcp
@@ -117,7 +132,7 @@ module "gatus" {
   location            = azurerm_resource_group.this.location
   name                = "aviatrix-azure-gatus-az${count.index + 1}"
   admin_username      = var.local_user
-  admin_password      = var.local_user_password
+  admin_password      = var.local_user_password != null ? var.local_user_password : random_password.password[0].result
   user_data           = data.cloudinit_config.gatus[count.index].rendered
   os_type             = "Linux"
   os_disk = {
@@ -151,7 +166,7 @@ data "cloudinit_config" "dashboard" {
 
   part {
     content_type = "text/x-shellscript"
-    content = templatefile("${path.module}/../templates/dashboard.tpl",
+    content = templatefile("${path.module}/templates/dashboard.tpl",
       {
         cloud     = "azure"
         instances = [for instance in module.gatus : instance.virtual_machine_azurerm.private_ip_addresses[0]]
@@ -168,7 +183,7 @@ module "dashboard" {
   location            = azurerm_resource_group.this.location
   name                = "aviatrix-azure-gatus-dashboard"
   admin_username      = var.local_user
-  admin_password      = var.local_user_password
+  admin_password      = var.local_user_password != null ? var.local_user_password : random_password.password[0].result
   user_data           = data.cloudinit_config.dashboard.rendered
   os_type             = "Linux"
   os_disk = {
@@ -240,7 +255,7 @@ resource "azurerm_network_security_rule" "this_inbound_tcp" {
   priority                    = 101
   protocol                    = "Tcp"
   source_port_range           = "*"
-  source_address_prefixes     = [var.dashboard_access_cidr]
+  source_address_prefixes     = var.dashboard_access_cidr != null ? [var.dashboard_access_cidr] : ["${chomp(data.http.my_ip.response_body)}/32"]
   destination_port_range      = 80
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.this.name

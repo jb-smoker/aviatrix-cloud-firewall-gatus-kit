@@ -8,7 +8,7 @@ Deploys a VPC/VNET and gatus workload instances across one to three AZs generati
 
 | Module version | Terraform version | Terraform provider version (AWS) | Terraform provider version (Azure) |
 | :------------- | :---------------- | :------------------------------- | :--------------------------------- |
-| v0.9.0         | >= 1.5.0          | >= 5.46.0                        | >= 3.116.0                         |
+| v0.9.0         | >= 1.5.0          | >= 5.94.0                        | >= 4.26.0                          |
 
 ## Usage Examples
 

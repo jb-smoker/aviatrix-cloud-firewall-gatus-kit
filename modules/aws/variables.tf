@@ -1,22 +1,8 @@
-variable "clouds" {
-  description = "Deploy gatus workloads to these cloud provider(s)."
-  type        = list(string)
-  default     = ["aws", "azure"]
-  validation {
-    condition = length([
-      for cloud in var.clouds : true
-      if contains(["aws", "azure"], lower(cloud))
-    ]) == length(var.clouds)
-    error_message = "This module only supports Aws and Azure."
-  }
-}
-
 variable "aws_region" {
   description = "AWS region."
   type        = string
-  default     = null
   validation {
-    condition     = var.azure_region == null || var.azure_region == "" ? true : contains(data.aws_regions.available.names, var.aws_region)
+    condition     = contains(data.aws_regions.available.names, var.aws_region)
     error_message = "AWS region must be specified and valid when AWS is included in the clouds list."
   }
 }
@@ -41,36 +27,6 @@ variable "number_of_instances" {
       var.number_of_instances >= 1
     )
     error_message = "number_of_instances must be between 1 and 3."
-  }
-}
-
-variable "azure_region" {
-  description = "Azure region."
-  type        = string
-  default     = null
-  validation {
-    condition = var.azure_region == null || var.azure_region == "" ? true : contains([
-      "eastus", "eastus2", "centralus", "northcentralus", "southcentralus", "westcentralus",
-      "westus", "westus2", "westus3", "australiacentral", "australiacentral2", "australiaeast",
-      "australiasoutheast", "brazilsouth", "brazilsoutheast", "canadacentral", "canadaeast",
-      "centralindia", "westindia", "southindia", "francecentral", "francesouth", "germanynorth",
-      "germanywestcentral", "northeurope", "westeurope", "japaneast", "japanwest", "koreacentral",
-      "koreasouth", "eastasia", "southeastasia", "southafricanorth", "southafricawest",
-      "switzerlandnorth", "switzerlandwest", "uksouth", "ukwest", "uaecentral", "uaenorth",
-      "norwayeast", "norwaywest", "swedencentral", "swedensouth", "qatarcentral", "polandcentral",
-      "italynorth", "israelnorth", "israelcentral", "spaincentral"
-    ], replace(lower(var.azure_region), "/[ ]/", ""))
-    error_message = "Azure region must be specified and valid when Azure is included in the clouds list."
-  }
-}
-
-variable "azure_cidr" {
-  description = "Azure vpc cidr."
-  type        = string
-  default     = "10.2.0.0/24"
-  validation {
-    condition     = can(cidrhost(var.azure_cidr, 0))
-    error_message = "azure_cidr must be valid IPv4 CIDR."
   }
 }
 
@@ -139,4 +95,12 @@ variable "dashboard_access_cidr" {
     condition     = var.dashboard_access_cidr == null ? true : can(cidrhost(var.dashboard_access_cidr, 0))
     error_message = "dashboard_access_cidr must be valid IPv4 CIDR."
   }
+}
+
+locals {
+  az_suffixes     = ["a", "b", "c"]
+  azs             = [for i in range(var.number_of_instances) : "${var.aws_region}${local.az_suffixes[i % length(local.az_suffixes)]}"]
+  subnets         = cidrsubnets(var.aws_cidr, [for i in range(var.number_of_instances * 2) : "4"]...)
+  private_subnets = slice(local.subnets, 0, var.number_of_instances)
+  public_subnets  = slice(local.subnets, var.number_of_instances, var.number_of_instances * 2)
 }

@@ -1,36 +1,3 @@
-variable "clouds" {
-  description = "Deploy gatus workloads to these cloud provider(s)."
-  type        = list(string)
-  default     = ["aws", "azure"]
-  validation {
-    condition = length([
-      for cloud in var.clouds : true
-      if contains(["aws", "azure"], lower(cloud))
-    ]) == length(var.clouds)
-    error_message = "This module only supports Aws and Azure."
-  }
-}
-
-variable "aws_region" {
-  description = "AWS region."
-  type        = string
-  default     = null
-  validation {
-    condition     = var.azure_region == null || var.azure_region == "" ? true : contains(data.aws_regions.available.names, var.aws_region)
-    error_message = "AWS region must be specified and valid when AWS is included in the clouds list."
-  }
-}
-
-variable "aws_cidr" {
-  description = "Aws vpc cidr."
-  type        = string
-  default     = "10.1.0.0/24"
-  validation {
-    condition     = can(cidrhost(var.aws_cidr, 0))
-    error_message = "aws_cidr must be valid IPv4 CIDR."
-  }
-}
-
 variable "number_of_instances" {
   description = "Number of gatus instances spread across subnets/azs to create."
   type        = number
@@ -139,4 +106,10 @@ variable "dashboard_access_cidr" {
     condition     = var.dashboard_access_cidr == null ? true : can(cidrhost(var.dashboard_access_cidr, 0))
     error_message = "dashboard_access_cidr must be valid IPv4 CIDR."
   }
+}
+
+locals {
+  subnets         = cidrsubnets(var.azure_cidr, [for i in range(var.number_of_instances * 2) : "4"]...)
+  private_subnets = slice(local.subnets, 0, var.number_of_instances)
+  public_subnets  = slice(local.subnets, var.number_of_instances, var.number_of_instances * 2)
 }
