@@ -10,7 +10,7 @@ provider "azurerm" {
 }
 
 module "demo_spoke_workloads" {
-  source                = "github.com/jb-smoker/demo-spoke-workloads"
+  source                = "github.com/jb-smoker/demo-spoke-workloads/modules/azure"
   clouds                = ["azure"]
   azure_region          = var.azure_region
   aws_cidr              = "10.1.1.0/24"

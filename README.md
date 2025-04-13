@@ -2,13 +2,30 @@
 
 ## Description
 
-Deploys a VPC/VNET and gatus workload instances across one to three AZs generating traffic to configured destinations/protocols.
+Deploys a VPC/VNET and gatus workload instances across one to three AZs generating traffic to configured destinations/protocols. The root module can deploy to all supported clouds, or any individual cloud with the caveat that the terraform providers for all clouds be configured -- even if that cloud is not selected for deployment. To deploy to a single cloud without passing the providers of all clouds, invoke its submodule directly.
 
-### Compatibility
+## Supported clouds
+
+| Cloud  | Supported |
+| :----- | :-------- |
+| AWS    | Yes       |
+| Azure  | Yes       |
+| GCP    | No        |
+| OCI    | No        |
+| Others | No        |
+
+## Compatibility
 
 | Module version | Terraform version | Terraform provider version (AWS) | Terraform provider version (Azure) |
 | :------------- | :---------------- | :------------------------------- | :--------------------------------- |
 | v0.9.0         | >= 1.5.0          | >= 5.94.0                        | >= 4.26.0                          |
+
+## Modules
+
+| Name                                                | Source          | Version |
+| --------------------------------------------------- | --------------- | ------- |
+| <a name="module_aws"></a> [aws](#module\_aws)       | ./modules/aws   | n/a     |
+| <a name="module_azure"></a> [azure](#module\_azure) | ./modules/azure | n/a     |
 
 ## Usage Examples
 

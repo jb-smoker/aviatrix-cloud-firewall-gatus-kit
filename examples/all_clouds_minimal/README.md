@@ -1,3 +1,8 @@
+# All supported clouds example with no optional input variables
+
+An example of all supported clouds with no optional input variables defined.
+
+```hcl
 variable "aws_region" { default = "us-east-1" }
 variable "azure_region" { default = "East US" }
 
@@ -27,7 +32,12 @@ output "aws_dashboard" {
 output "azure_dashboard" {
   value = module.demo_spoke_workloads.azure_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.azure_dashboard_public_ip}" : null
 }
-output "local_user_password" {
-  value     = module.demo_spoke_workloads.local_user_password != null ? module.demo_spoke_workloads.local_user_password : null
+output "aws_local_user_password" {
+  value     = module.demo_spoke_workloads.aws_local_user_password != null ? module.demo_spoke_workloads.aws_local_user_password : null
   sensitive = true
 }
+output "azure_local_user_password" {
+  value     = module.demo_spoke_workloads.azure_local_user_password != null ? module.demo_spoke_workloads.azure_local_user_password : null
+  sensitive = true
+}
+```

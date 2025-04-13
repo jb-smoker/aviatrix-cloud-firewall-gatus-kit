@@ -15,7 +15,7 @@ provider "azurerm" {
 }
 
 module "demo_spoke_workloads" {
-  source       = "github.com/jb-smoker/demo-spoke-workloads"
+  source       = "github.com/jb-smoker/demo-spoke-workloads/modules/azure"
   clouds       = ["azure"]
   azure_region = var.azure_region
 }
@@ -23,8 +23,8 @@ module "demo_spoke_workloads" {
 output "azure_dashboard" {
   value = module.demo_spoke_workloads.azure_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.azure_dashboard_public_ip}" : null
 }
-output "local_user_password" {
-  value     = module.demo_spoke_workloads.local_user_password != null ? module.demo_spoke_workloads.local_user_password : null
+output "azure_local_user_password" {
+  value     = module.demo_spoke_workloads.azure_local_user_password != null ? module.demo_spoke_workloads.azure_local_user_password : null
   sensitive = true
 }
 ```
