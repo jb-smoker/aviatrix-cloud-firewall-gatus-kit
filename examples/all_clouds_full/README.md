@@ -63,4 +63,18 @@ output "aws_dashboard" {
 output "azure_dashboard" {
   value = module.demo_spoke_workloads.azure_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.azure_dashboard_public_ip}" : null
 }
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.94"
+    }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.26"
+    }
+  }
+  required_version = ">= 1.5.0"
+}
 ```

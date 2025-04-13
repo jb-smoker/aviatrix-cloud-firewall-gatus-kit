@@ -17,3 +17,13 @@ output "aws_local_user_password" {
   value     = module.demo_spoke_workloads.aws_local_user_password != null ? module.demo_spoke_workloads.aws_local_user_password : null
   sensitive = true
 }
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.94"
+    }
+  }
+  required_version = ">= 1.5.0"
+}

@@ -134,6 +134,7 @@ module "gatus" {
   admin_username      = var.local_user
   admin_password      = var.local_user_password != null ? var.local_user_password : random_password.password[0].result
   user_data           = data.cloudinit_config.gatus[count.index].rendered
+  sku_size            = "Standard_B2ts_v2"
   os_type             = "Linux"
   os_disk = {
     caching              = "ReadWrite"
@@ -185,6 +186,7 @@ module "dashboard" {
   admin_username      = var.local_user
   admin_password      = var.local_user_password != null ? var.local_user_password : random_password.password[0].result
   user_data           = data.cloudinit_config.dashboard.rendered
+  sku_size            = "Standard_B2ts_v2"
   os_type             = "Linux"
   os_disk = {
     caching              = "ReadWrite"

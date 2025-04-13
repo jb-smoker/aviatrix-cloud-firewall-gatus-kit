@@ -48,4 +48,14 @@ module "demo_spoke_workloads" {
 output "aws_dashboard" {
   value = module.demo_spoke_workloads.aws_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.aws_dashboard_public_ip}" : null
 }
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.94"
+    }
+  }
+  required_version = ">= 1.5.0"
+}
 ```

@@ -14,9 +14,8 @@ variable "clouds" {
 variable "aws_region" {
   description = "AWS region."
   type        = string
-  default     = null
   validation {
-    condition     = var.azure_region == null || var.azure_region == "" ? true : contains(data.aws_regions.available.names, var.aws_region)
+    condition     = contains(data.aws_regions.available.names, var.aws_region)
     error_message = "AWS region must be specified and valid when AWS is included in the clouds list."
   }
 }
@@ -47,9 +46,8 @@ variable "number_of_instances" {
 variable "azure_region" {
   description = "Azure region."
   type        = string
-  default     = null
   validation {
-    condition = var.azure_region == null || var.azure_region == "" ? true : contains([
+    condition = contains([
       "eastus", "eastus2", "centralus", "northcentralus", "southcentralus", "westcentralus",
       "westus", "westus2", "westus3", "australiacentral", "australiacentral2", "australiaeast",
       "australiasoutheast", "brazilsouth", "brazilsoutheast", "canadacentral", "canadaeast",

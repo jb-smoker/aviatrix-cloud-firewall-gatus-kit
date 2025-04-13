@@ -29,7 +29,12 @@ Deploys a VPC/VNET and gatus workload instances across one to three AZs generati
 
 ## Usage Examples
 
-See [examples](https://github.com/terraform-aviatrix-modules/terraform-aviatrix-demo-spoke-workloads/tree/main/examples)
+Two sets of examples are provided for each deployment option.
+
+- `_full` provides values for all available input variables.
+- `_minimal` provides only required input variables.
+
+  See [examples](https://github.com/terraform-aviatrix-modules/terraform-aviatrix-demo-spoke-workloads/tree/main/examples)
 
 ## Input Variables
 

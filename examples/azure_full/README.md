@@ -54,4 +54,14 @@ module "demo_spoke_workloads" {
 output "azure_dashboard" {
   value = module.demo_spoke_workloads.azure_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.azure_dashboard_public_ip}" : null
 }
+
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.26"
+    }
+  }
+  required_version = ">= 1.5.0"
+}
 ```

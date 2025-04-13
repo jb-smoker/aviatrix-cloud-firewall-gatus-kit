@@ -78,7 +78,7 @@ module "gatus" {
 
   name = "aviatrix-aws-gatus-az${each.value + 1}"
 
-  instance_type          = "t3.micro"
+  instance_type          = "t3.nano"
   vpc_security_group_ids = [aws_security_group.this.id]
   subnet_id              = element(module.vpc.private_subnets, each.key)
   ami                    = data.aws_ssm_parameter.ubuntu_ami.value
@@ -104,7 +104,7 @@ module "dashboard" {
 
   name = "aviatrix-aws-gatus-dashboard"
 
-  instance_type               = "t3.micro"
+  instance_type               = "t3.nano"
   vpc_security_group_ids      = [aws_security_group.this.id]
   subnet_id                   = module.vpc.public_subnets[0]
   ami                         = data.aws_ssm_parameter.ubuntu_ami.value

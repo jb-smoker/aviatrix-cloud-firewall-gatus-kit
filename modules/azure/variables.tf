@@ -1,22 +1,8 @@
-variable "number_of_instances" {
-  description = "Number of gatus instances spread across subnets/azs to create."
-  type        = number
-  default     = 2
-  validation {
-    condition = (
-      var.number_of_instances <= 3 &&
-      var.number_of_instances >= 1
-    )
-    error_message = "number_of_instances must be between 1 and 3."
-  }
-}
-
 variable "azure_region" {
   description = "Azure region."
   type        = string
-  default     = null
   validation {
-    condition = var.azure_region == null || var.azure_region == "" ? true : contains([
+    condition = contains([
       "eastus", "eastus2", "centralus", "northcentralus", "southcentralus", "westcentralus",
       "westus", "westus2", "westus3", "australiacentral", "australiacentral2", "australiaeast",
       "australiasoutheast", "brazilsouth", "brazilsoutheast", "canadacentral", "canadaeast",
@@ -38,6 +24,19 @@ variable "azure_cidr" {
   validation {
     condition     = can(cidrhost(var.azure_cidr, 0))
     error_message = "azure_cidr must be valid IPv4 CIDR."
+  }
+}
+
+variable "number_of_instances" {
+  description = "Number of gatus instances spread across subnets/azs to create."
+  type        = number
+  default     = 2
+  validation {
+    condition = (
+      var.number_of_instances <= 3 &&
+      var.number_of_instances >= 1
+    )
+    error_message = "number_of_instances must be between 1 and 3."
   }
 }
 
