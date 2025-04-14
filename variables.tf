@@ -54,7 +54,7 @@ variable "azure_region" {
       "uksouth", "uaenorth", "norwayeast", "swedencentral", "swedensouth", "qatarcentral", "polandcentral",
       "italynorth", "israelnorth", "israelcentral", "spaincentral"
     ], replace(lower(var.azure_region), "/[ ]/", ""))
-    error_message = "Azure region must be specified, valid, and support AZs when Azure is included in the clouds list."
+    error_message = "Azure region must be specified, valid, and support AZs."
   }
 }
 
