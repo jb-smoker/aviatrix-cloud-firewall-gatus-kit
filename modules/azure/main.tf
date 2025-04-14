@@ -134,7 +134,7 @@ module "gatus" {
   admin_username      = var.local_user
   admin_password      = var.local_user_password != null ? var.local_user_password : random_password.password[0].result
   user_data           = data.cloudinit_config.gatus[count.index].rendered
-  sku_size            = "Standard_B2ts_v2"
+  sku_size            = var.azure_instance_type
   os_type             = "Linux"
   os_disk = {
     caching              = "ReadWrite"
@@ -186,7 +186,7 @@ module "dashboard" {
   admin_username      = var.local_user
   admin_password      = var.local_user_password != null ? var.local_user_password : random_password.password[0].result
   user_data           = data.cloudinit_config.dashboard.rendered
-  sku_size            = "Standard_B2ts_v2"
+  sku_size            = var.azure_instance_type
   os_type             = "Linux"
   os_disk = {
     caching              = "ReadWrite"
@@ -216,6 +216,23 @@ module "dashboard" {
     }
   }
 }
+
+data "terracurl_request" "dashboard" {
+  count  = var.dashboard ? 1 : 0
+  name   = "dashboard"
+  url    = "http://${module.dashboard[0].public_ips.network_interface_1-ip_configuration_1.ip_address}"
+  method = "GET"
+
+  response_codes = [200]
+
+  max_retry      = 30
+  retry_interval = 10
+
+  depends_on = [
+    module.dashboard
+  ]
+}
+
 
 resource "azurerm_network_security_group" "this" {
   name                = "aviatrix-security-group"

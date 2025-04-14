@@ -30,6 +30,12 @@ variable "aws_cidr" {
   }
 }
 
+variable "aws_instance_type" {
+  description = "Instance type for the aws instances."
+  type        = string
+  default     = "t3.nano"
+}
+
 variable "number_of_instances" {
   description = "Number of gatus instances spread across subnets/azs to create."
   type        = number
@@ -66,6 +72,12 @@ variable "azure_cidr" {
     condition     = can(cidrhost(var.azure_cidr, 0))
     error_message = "azure_cidr must be valid IPv4 CIDR."
   }
+}
+
+variable "azure_instance_type" {
+  description = "Instance type for the azure instances."
+  type        = string
+  default     = "Standard_B2ts_v2"
 }
 
 variable "gatus_interval" {

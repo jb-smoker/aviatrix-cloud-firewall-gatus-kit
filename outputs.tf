@@ -9,13 +9,13 @@ output "azure_dashboard_public_ip" {
 }
 
 output "aws_local_user_password" {
-  value       = var.local_user_password != null ? null : module.aws["aws"].aws_local_user_password
+  value       = contains([for s in var.clouds : lower(s)], "aws") && var.local_user_password == null ? module.aws["aws"].aws_local_user_password : null
   sensitive   = true
   description = "The generated random aws local_user_password"
 }
 
 output "azure_local_user_password" {
-  value       = var.local_user_password != null ? null : module.azure["azure"].azure_local_user_password
+  value       = contains([for s in var.clouds : lower(s)], "azure") && var.local_user_password == null ? module.azure["azure"].azure_local_user_password : null
   sensitive   = true
   description = "The generated random azure local_user_password"
 }

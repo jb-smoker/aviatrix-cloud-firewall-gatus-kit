@@ -78,7 +78,7 @@ module "gatus" {
 
   name = "aviatrix-aws-gatus-az${each.value + 1}"
 
-  instance_type          = "t3.nano"
+  instance_type          = var.aws_instance_type
   vpc_security_group_ids = [aws_security_group.this.id]
   subnet_id              = element(module.vpc.private_subnets, each.key)
   ami                    = data.aws_ssm_parameter.ubuntu_ami.value
@@ -104,7 +104,7 @@ module "dashboard" {
 
   name = "aviatrix-aws-gatus-dashboard"
 
-  instance_type               = "t3.nano"
+  instance_type               = var.aws_instance_type
   vpc_security_group_ids      = [aws_security_group.this.id]
   subnet_id                   = module.vpc.public_subnets[0]
   ami                         = data.aws_ssm_parameter.ubuntu_ami.value
@@ -117,4 +117,20 @@ module "dashboard" {
       version   = var.gatus_version
   })
   depends_on = [module.gatus]
+}
+
+data "terracurl_request" "dashboard" {
+  count  = var.dashboard ? 1 : 0
+  name   = "dashboard"
+  url    = "http://${module.dashboard[0].public_ip}"
+  method = "GET"
+
+  response_codes = [200]
+
+  max_retry      = 30
+  retry_interval = 10
+
+  depends_on = [
+    module.dashboard
+  ]
 }

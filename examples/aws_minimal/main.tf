@@ -13,10 +13,6 @@ module "demo_spoke_workloads" {
 output "aws_dashboard" {
   value = module.demo_spoke_workloads.aws_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.aws_dashboard_public_ip}" : null
 }
-output "aws_local_user_password" {
-  value     = module.demo_spoke_workloads.aws_local_user_password != null ? module.demo_spoke_workloads.aws_local_user_password : null
-  sensitive = true
-}
 
 terraform {
   required_providers {

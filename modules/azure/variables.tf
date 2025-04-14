@@ -23,6 +23,12 @@ variable "azure_cidr" {
   }
 }
 
+variable "azure_instance_type" {
+  description = "Instance type for the azure instances."
+  type        = string
+  default     = "Standard_B2ts_v2"
+}
+
 variable "number_of_instances" {
   description = "Number of gatus instances spread across subnets/azs to create."
   type        = number

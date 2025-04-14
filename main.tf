@@ -5,6 +5,7 @@ module "aws" {
   source                = "./modules/aws"
   aws_cidr              = var.aws_cidr
   aws_region            = var.aws_region
+  aws_instance_type     = var.aws_instance_type
   dashboard             = var.dashboard
   dashboard_access_cidr = var.dashboard_access_cidr
   gatus_endpoints       = var.gatus_endpoints
@@ -20,6 +21,7 @@ module "azure" {
   source                = "./modules/azure"
   azure_cidr            = var.azure_cidr
   azure_region          = var.azure_region == null ? "region_placeholder" : var.azure_region
+  azure_instance_type   = var.azure_instance_type
   dashboard             = var.dashboard
   dashboard_access_cidr = var.dashboard_access_cidr
   gatus_endpoints       = var.gatus_endpoints

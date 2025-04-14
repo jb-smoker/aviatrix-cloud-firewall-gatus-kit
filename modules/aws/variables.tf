@@ -17,6 +17,12 @@ variable "aws_cidr" {
   }
 }
 
+variable "aws_instance_type" {
+  description = "Instance type for the aws instances."
+  type        = string
+  default     = "t3.nano"
+}
+
 variable "number_of_instances" {
   description = "Number of gatus instances spread across subnets/azs to create."
   type        = number
