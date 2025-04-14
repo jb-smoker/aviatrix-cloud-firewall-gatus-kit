@@ -122,7 +122,7 @@ variable "local_user_password" {
 variable "dashboard" {
   description = "Create a dashboard to expose gatus status to the Internet."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "dashboard_access_cidr" {
