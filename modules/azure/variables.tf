@@ -3,17 +3,13 @@ variable "azure_region" {
   type        = string
   validation {
     condition = contains([
-      "eastus", "eastus2", "centralus", "northcentralus", "southcentralus", "westcentralus",
-      "westus", "westus2", "westus3", "australiacentral", "australiacentral2", "australiaeast",
-      "australiasoutheast", "brazilsouth", "brazilsoutheast", "canadacentral", "canadaeast",
-      "centralindia", "westindia", "southindia", "francecentral", "francesouth", "germanynorth",
-      "germanywestcentral", "northeurope", "westeurope", "japaneast", "japanwest", "koreacentral",
-      "koreasouth", "eastasia", "southeastasia", "southafricanorth", "southafricawest",
-      "switzerlandnorth", "switzerlandwest", "uksouth", "ukwest", "uaecentral", "uaenorth",
-      "norwayeast", "norwaywest", "swedencentral", "swedensouth", "qatarcentral", "polandcentral",
+      "eastus", "eastus2", "centralus", "southcentralus", "westus2", "westus3", "australiaeast", "brazilsouth",
+      "canadacentral", "centralindia", "francecentral", "germanywestcentral", "northeurope", "westeurope",
+      "japaneast", "japanwest", "koreacentral", "eastasia", "southeastasia", "southafricanorth", "switzerlandnorth",
+      "uksouth", "uaenorth", "norwayeast", "swedencentral", "swedensouth", "qatarcentral", "polandcentral",
       "italynorth", "israelnorth", "israelcentral", "spaincentral"
     ], replace(lower(var.azure_region), "/[ ]/", ""))
-    error_message = "Azure region must be specified and valid when Azure is included in the clouds list."
+    error_message = "Azure region must be specified, valid, and support AZs when Azure is included in the clouds list."
   }
 }
 
