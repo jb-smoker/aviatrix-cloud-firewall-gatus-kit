@@ -1,19 +1,11 @@
-variable "aws_region" { default = "us-east-1" }
-
-provider "aws" {
-  region = var.aws_region
+# Variables
+variable "aws_region" {
+  default = "us-east-1"
 }
-
-module "demo_spoke_workloads" {
-  source     = "github.com/jb-smoker/demo-spoke-workloads/modules/aws"
-  aws_region = var.aws_region
-}
-
-output "aws_dashboard" {
-  value = module.demo_spoke_workloads.aws_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.aws_dashboard_public_ip}" : null
-}
-
+# Terraform configuration
 terraform {
+  required_version = ">= 1.5.0"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -24,5 +16,17 @@ terraform {
       version = "~> 1.2.1"
     }
   }
-  required_version = ">= 1.5.0"
+}
+# Providers
+provider "aws" {
+  region = var.aws_region
+}
+# Modules
+module "demo_spoke_workloads" {
+  source     = "github.com/jb-smoker/demo-spoke-workloads/modules/aws"
+  aws_region = var.aws_region
+}
+# Outputs
+output "aws_dashboard" {
+  value = module.demo_spoke_workloads.aws_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.aws_dashboard_public_ip}" : null
 }
