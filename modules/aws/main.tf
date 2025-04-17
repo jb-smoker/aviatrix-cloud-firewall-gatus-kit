@@ -19,7 +19,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.13.0"
 
-  name = "aviatrix"
+  name = "${local.name_prefix}vpc"
   cidr = var.aws_cidr
 
   azs             = local.azs
@@ -32,7 +32,7 @@ module "vpc" {
 }
 
 resource "aws_security_group" "this" {
-  name        = "aviatrix"
+  name        = "${local.name_prefix}sg"
   description = "security group for aviatrix gatus instances"
   vpc_id      = module.vpc.vpc_id
 }
@@ -76,7 +76,7 @@ module "gatus" {
   for_each = toset(formatlist("%d", range(var.number_of_instances)))
   source   = "terraform-aws-modules/ec2-instance/aws"
 
-  name = "aviatrix-aws-gatus-az${each.value + 1}"
+  name = "${local.name_prefix}aws-gatus-az${each.value + 1}"
 
   instance_type          = var.aws_instance_type
   vpc_security_group_ids = [aws_security_group.this.id]
@@ -85,7 +85,7 @@ module "gatus" {
 
   user_data = templatefile("${path.module}/templates/gatus.tpl",
     {
-      name     = "aviatrix-aws-gatus-az${each.value + 1}"
+      name     = "${local.name_prefix}aws-gatus-az${each.value + 1}"
       user     = var.local_user
       password = var.local_user_password != null ? var.local_user_password : random_password.password[0].result
       https    = var.gatus_endpoints.https
@@ -102,7 +102,7 @@ module "dashboard" {
   count  = var.dashboard ? 1 : 0
   source = "terraform-aws-modules/ec2-instance/aws"
 
-  name = "aviatrix-aws-gatus-dashboard"
+  name = "${local.name_prefix}aws-gatus-dashboard"
 
   instance_type               = var.aws_instance_type
   vpc_security_group_ids      = [aws_security_group.this.id]

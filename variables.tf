@@ -146,3 +146,13 @@ variable "dashboard_access_cidr" {
     error_message = "dashboard_access_cidr must be valid IPv4 CIDR."
   }
 }
+
+variable "name_prefix" {
+  description = "Prefix to apply to all resources"
+  type        = string
+  default     = "aviatrix-cloud-firewall-gatus-kit"
+  validation {
+    condition     = length(var.name_prefix) <= 33 && can(regex("^[0-9a-z-]+$", var.name_prefix))
+    error_message = "Name prefix can only contain hyphens, lowercase letters, numbers, and must be 33 characters or less in length."
+  }
+}

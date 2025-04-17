@@ -109,8 +109,19 @@ variable "dashboard_access_cidr" {
   }
 }
 
+variable "name_prefix" {
+  description = "Prefix to apply to all resources"
+  type        = string
+  default     = "aviatrix-cloud-firewall-gatus-kit"
+  validation {
+    condition     = length(var.name_prefix) <= 33 && can(regex("^[0-9a-z-]+$", var.name_prefix))
+    error_message = "Name prefix can only contain hyphens, lowercase letters, numbers, and must be 33 characters or less in length."
+  }
+}
+
 locals {
   subnets         = cidrsubnets(var.azure_cidr, [for i in range(var.number_of_instances * 2) : "4"]...)
   private_subnets = slice(local.subnets, 0, var.number_of_instances)
   public_subnets  = slice(local.subnets, var.number_of_instances, var.number_of_instances * 2)
+  name_prefix     = "${var.name_prefix}-"
 }

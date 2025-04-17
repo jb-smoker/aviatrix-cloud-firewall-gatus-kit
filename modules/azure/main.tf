@@ -14,18 +14,18 @@ resource "random_password" "password" {
 }
 
 resource "azurerm_resource_group" "this" {
-  name     = "aviatrix"
+  name     = "${local.name_prefix}rg"
   location = var.azure_region
 }
 
 resource "azurerm_nat_gateway" "this" {
   location            = azurerm_resource_group.this.location
-  name                = "aviatrix-nat"
+  name                = "${local.name_prefix}nat"
   resource_group_name = azurerm_resource_group.this.name
 }
 
 resource "azurerm_public_ip" "nat" {
-  name                = "aviatrix-nat-ip"
+  name                = "${local.name_prefix}nat-ip"
   location            = azurerm_resource_group.this.location
   resource_group_name = azurerm_resource_group.this.name
   allocation_method   = "Static"
@@ -39,14 +39,22 @@ resource "azurerm_nat_gateway_public_ip_association" "nat" {
 
 resource "azurerm_route_table" "public" {
   location            = azurerm_resource_group.this.location
-  name                = "aviatrix-public"
+  name                = "${local.name_prefix}public-rt"
   resource_group_name = azurerm_resource_group.this.name
 }
 
 resource "azurerm_route_table" "private" {
   location            = azurerm_resource_group.this.location
-  name                = "aviatrix-private"
+  name                = "${local.name_prefix}private-rt"
   resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_route" "private_default" {
+  name                = "Default"
+  resource_group_name = azurerm_resource_group.this.name
+  next_hop_type       = "None"
+  address_prefix      = "0.0.0.0/0"
+  route_table_name    = azurerm_route_table.private.name
 }
 
 module "vnet" {
@@ -55,13 +63,13 @@ module "vnet" {
 
   address_space       = [var.azure_cidr]
   location            = azurerm_resource_group.this.location
-  name                = "aviatrix"
+  name                = "${local.name_prefix}vnet"
   resource_group_name = azurerm_resource_group.this.name
 }
 
 resource "azurerm_subnet" "public" {
   count                           = var.number_of_instances
-  name                            = "public-${count.index + 1}"
+  name                            = "${local.name_prefix}-public-subnet${count.index + 1}"
   resource_group_name             = azurerm_resource_group.this.name
   virtual_network_name            = module.vnet.name
   address_prefixes                = [local.public_subnets[count.index]]
@@ -76,7 +84,7 @@ resource "azurerm_subnet_route_table_association" "public" {
 
 resource "azurerm_subnet" "private" {
   count                           = var.number_of_instances
-  name                            = "private-${count.index + 1}"
+  name                            = "${local.name_prefix}private-subnet-${count.index + 1}"
   resource_group_name             = azurerm_resource_group.this.name
   virtual_network_name            = module.vnet.name
   address_prefixes                = [local.private_subnets[count.index]]
@@ -111,7 +119,7 @@ data "cloudinit_config" "gatus" {
     content_type = "text/x-shellscript"
     content = templatefile("${path.module}/templates/gatus.tpl",
       {
-        name     = "aviatrix-azure-gatus-az${count.index + 1}"
+        name     = "${local.name_prefix}azure-gatus-az${count.index + 1}"
         user     = var.local_user
         password = var.local_user_password != null ? var.local_user_password : random_password.password[0].result
         https    = var.gatus_endpoints.https
@@ -130,7 +138,7 @@ module "gatus" {
   version             = "0.18.0"
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
-  name                = "aviatrix-azure-gatus-az${count.index + 1}"
+  name                = "${local.name_prefix}azure-gatus-az${count.index + 1}"
   admin_username      = var.local_user
   admin_password      = var.local_user_password != null ? var.local_user_password : random_password.password[0].result
   user_data           = data.cloudinit_config.gatus[count.index].rendered
@@ -182,7 +190,7 @@ module "dashboard" {
   version             = "0.18.0"
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
-  name                = "aviatrix-azure-gatus-dashboard"
+  name                = "${local.name_prefix}azure-gatus-dashboard"
   admin_username      = var.local_user
   admin_password      = var.local_user_password != null ? var.local_user_password : random_password.password[0].result
   user_data           = data.cloudinit_config.dashboard.rendered
@@ -235,7 +243,7 @@ data "terracurl_request" "dashboard" {
 
 
 resource "azurerm_network_security_group" "this" {
-  name                = "aviatrix-security-group"
+  name                = "${local.name_prefix}sg"
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
 }
