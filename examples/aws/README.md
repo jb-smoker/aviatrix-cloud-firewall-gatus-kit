@@ -1,6 +1,6 @@
-# Aws example with no optional input variables
+# AWS example
 
-An Aws-only example with no optional input variables defined.
+Deployment example for AWS only.
 
 ```hcl
 variable "aws_region" { default = "us-east-1" }
@@ -11,7 +11,6 @@ provider "aws" {
 
 module "demo_spoke_workloads" {
   source     = "github.com/jb-smoker/demo-spoke-workloads/modules/aws"
-  clouds     = ["aws"]
   aws_region = var.aws_region
 }
 

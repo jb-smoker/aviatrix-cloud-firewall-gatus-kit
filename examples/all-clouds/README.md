@@ -1,6 +1,6 @@
-# All supported clouds example with no optional input variables
+# All supported clouds example
 
-An example of all supported clouds with no optional input variables defined.
+Deployment example of all supported clouds.
 
 ```hcl
 variable "aws_region" { default = "us-east-1" }
@@ -12,16 +12,10 @@ provider "aws" {
 
 provider "azurerm" {
   features {}
-  resource_provider_registrations = "none"
-  subscription_id                 = "azure_subscription_id"
-  client_id                       = "azure_application_id"
-  client_secret                   = "azure_application_key"
-  tenant_id                       = "azure_directory_id"
 }
 
 module "demo_spoke_workloads" {
   source       = "github.com/jb-smoker/demo-spoke-workloads"
-  clouds       = ["aws", "azure"]
   aws_region   = var.aws_region
   azure_region = var.azure_region
 }

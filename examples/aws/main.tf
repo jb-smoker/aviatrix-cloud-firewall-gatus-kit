@@ -1,0 +1,28 @@
+variable "aws_region" { default = "us-east-1" }
+
+provider "aws" {
+  region = var.aws_region
+}
+
+module "demo_spoke_workloads" {
+  source     = "github.com/jb-smoker/demo-spoke-workloads/modules/aws"
+  aws_region = var.aws_region
+}
+
+output "aws_dashboard" {
+  value = module.demo_spoke_workloads.aws_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.aws_dashboard_public_ip}" : null
+}
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.94"
+    }
+    terracurl = {
+      source  = "devops-rob/terracurl"
+      version = "~> 1.2.1"
+    }
+  }
+  required_version = ">= 1.5.0"
+}
