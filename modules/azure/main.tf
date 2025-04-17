@@ -49,14 +49,6 @@ resource "azurerm_route_table" "private" {
   resource_group_name = azurerm_resource_group.this.name
 }
 
-resource "azurerm_route" "private_default" {
-  name                = "Default"
-  resource_group_name = azurerm_resource_group.this.name
-  next_hop_type       = "None"
-  address_prefix      = "0.0.0.0/0"
-  route_table_name    = azurerm_route_table.private.name
-}
-
 module "vnet" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
   version = "0.8.1"
