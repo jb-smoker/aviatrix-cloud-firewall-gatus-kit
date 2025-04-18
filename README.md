@@ -62,45 +62,45 @@ Ensure your CSP quotas allow for the creation of the following resources.
 
 ## Usage Examples
 
-The following examples offer snippets of code for calling the module(s). See [examples](https://github.com/terraform-aviatrix-modules/terraform-aviatrix-demo-spoke-workloads/tree/main/examples) for full ready to execute code (personalization required).
+The following examples offer snippets of code for calling the module(s). See [examples](https://github.com/terraform-aviatrix-modules/terraform-aviatrix-aviatrix-cloud-firewall-gatus-kit/tree/main/examples) for full ready to execute code (personalization required).
 
 ### All supported clouds
 
 ```terraform
-module "demo_spoke_workloads" {
-  source       = "github.com/jb-smoker/demo-spoke-workloads"
+module "aviatrix_cloud_firewall_gatus_kit" {
+  source       = "github.com/jb-smoker/aviatrix-cloud-firewall-gatus-kit"
   aws_region   = var.aws_region
   azure_region = var.azure_region
 }
 output "aws_dashboard" {
-  value = module.demo_spoke_workloads.aws_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.aws_dashboard_public_ip}" : null
+  value = module.aviatrix_cloud_firewall_gatus_kit.aws_dashboard_public_ip != null ? "http://${module.aviatrix_cloud_firewall_gatus_kit.aws_dashboard_public_ip}" : null
 }
 output "azure_dashboard" {
-  value = module.demo_spoke_workloads.azure_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.azure_dashboard_public_ip}" : null
+  value = module.aviatrix_cloud_firewall_gatus_kit.azure_dashboard_public_ip != null ? "http://${module.aviatrix_cloud_firewall_gatus_kit.azure_dashboard_public_ip}" : null
 }
 ```
 
 ### AWS
 
 ```terraform
-module "demo_spoke_workloads" {
-  source       = "github.com/jb-smoker/demo-spoke-workloads/modules/aws"
+module "aviatrix_cloud_firewall_gatus_kit" {
+  source       = "github.com/jb-smoker/aviatrix-cloud-firewall-gatus-kit/modules/aws"
   aws_region   = var.aws_region
 }
 output "aws_dashboard" {
-  value = module.demo_spoke_workloads.aws_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.aws_dashboard_public_ip}" : null
+  value = module.aviatrix_cloud_firewall_gatus_kit.aws_dashboard_public_ip != null ? "http://${module.aviatrix_cloud_firewall_gatus_kit.aws_dashboard_public_ip}" : null
 }
 ```
 
 ### Azure
 
 ```terraform
-module "demo_spoke_workloads" {
-  source       = "github.com/jb-smoker/demo-spoke-workloads/modules/azure"
+module "aviatrix_cloud_firewall_gatus_kit" {
+  source       = "github.com/jb-smoker/aviatrix-cloud-firewall-gatus-kit/modules/azure"
   azure_region = var.azure_region
 }
 output "azure_dashboard" {
-  value = module.demo_spoke_workloads.azure_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.azure_dashboard_public_ip}" : null
+  value = module.aviatrix_cloud_firewall_gatus_kit.azure_dashboard_public_ip != null ? "http://${module.aviatrix_cloud_firewall_gatus_kit.azure_dashboard_public_ip}" : null
 }
 ```
 

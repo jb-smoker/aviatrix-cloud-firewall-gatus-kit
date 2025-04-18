@@ -27,12 +27,12 @@ provider "azurerm" {
   features {}
 }
 # Modules
-module "demo_spoke_workloads" {
-  source       = "github.com/jb-smoker/demo-spoke-workloads/modules/azure"
+module "aviatrix_cloud_firewall_gatus_kit" {
+  source       = "github.com/jb-smoker/aviatrix-cloud-firewall-gatus-kit/modules/azure"
   azure_region = var.azure_region
 }
 # Outputs
 output "azure_dashboard" {
-  value = module.demo_spoke_workloads.azure_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.azure_dashboard_public_ip}" : null
+  value = module.aviatrix_cloud_firewall_gatus_kit.azure_dashboard_public_ip != null ? "http://${module.aviatrix_cloud_firewall_gatus_kit.azure_dashboard_public_ip}" : null
 }
 ```

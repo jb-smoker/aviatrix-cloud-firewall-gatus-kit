@@ -14,17 +14,17 @@ provider "azurerm" {
   features {}
 }
 
-module "demo_spoke_workloads" {
-  source       = "github.com/jb-smoker/demo-spoke-workloads"
+module "aviatrix_cloud_firewall_gatus_kit" {
+  source       = "github.com/jb-smoker/aviatrix-cloud-firewall-gatus-kit"
   aws_region   = var.aws_region
   azure_region = var.azure_region
 }
 
 output "aws_dashboard" {
-  value = module.demo_spoke_workloads.aws_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.aws_dashboard_public_ip}" : null
+  value = module.aviatrix_cloud_firewall_gatus_kit.aws_dashboard_public_ip != null ? "http://${module.aviatrix_cloud_firewall_gatus_kit.aws_dashboard_public_ip}" : null
 }
 output "azure_dashboard" {
-  value = module.demo_spoke_workloads.azure_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.azure_dashboard_public_ip}" : null
+  value = module.aviatrix_cloud_firewall_gatus_kit.azure_dashboard_public_ip != null ? "http://${module.aviatrix_cloud_firewall_gatus_kit.azure_dashboard_public_ip}" : null
 }
 
 terraform {
