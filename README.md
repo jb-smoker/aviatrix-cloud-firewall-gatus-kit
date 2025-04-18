@@ -1,4 +1,4 @@
-# terraform-aviatrix-demo-spoke-workloads
+# terraform-aviatrix-aviatrix-cloud-firewall-gatus-kit
 
 ## Description
 
@@ -27,13 +27,14 @@ All deployed instances conform to the following spec:
 
 ## Resources required
 
+Ensure your CSP quotas allow for the creation of the following resources.
+
 ### AWS
 
 | Resource     | Number | Default |
 | :----------- | :----- | :------ |
 | Public IPs   | 1 to 2 | 2       |
 | VPCs         | 1      | 1       |
-| Subnets      | 2 to 6 | 4       |
 | NAT Gateways | 1      | 1       |
 | vCPUs        | 4 to 8 | 6       |
 
@@ -43,7 +44,6 @@ All deployed instances conform to the following spec:
 | :----------- | :----- | :------ |
 | Public IPs   | 1 to 2 | 2       |
 | Vnets        | 1      | 1       |
-| Subnets      | 3 to 7 | 5       |
 | NAT Gateways | 1      | 1       |
 | vCPUs        | 4 to 8 | 6       |
 

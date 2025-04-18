@@ -103,13 +103,6 @@ resource "azurerm_subnet_nat_gateway_association" "this" {
   nat_gateway_id = azurerm_nat_gateway.this.id
 }
 
-module "naming" {
-  source  = "Azure/naming/azurerm"
-  version = "~> 0.4"
-  count   = var.number_of_instances + 1
-}
-
-
 data "cloudinit_config" "gatus" {
   count         = var.number_of_instances
   gzip          = false
@@ -158,10 +151,10 @@ module "gatus" {
   zone                       = count.index + 1
   network_interfaces = {
     network_interface_1 = {
-      name = module.naming[count.index].network_interface.name_unique
+      name = "${local.name_prefix}azure-gatus-az${count.index + 1}-nic"
       ip_configurations = {
         ip_configuration_1 = {
-          name                          = "${module.naming[count.index].network_interface.name_unique}-ipconfig1"
+          name                          = "${local.name_prefix}azure-gatus-az${count.index + 1}-ipconfig1"
           private_ip_subnet_resource_id = azurerm_subnet.private[count.index].id
         }
       }
@@ -212,13 +205,13 @@ module "dashboard" {
   network_interfaces = {
 
     network_interface_1 = {
-      name = module.naming[var.number_of_instances].network_interface.name_unique
+      name = "${local.name_prefix}azure-gatus-dashboard-nic"
       ip_configurations = {
         ip_configuration_1 = {
-          name                          = "${module.naming[var.number_of_instances].network_interface.name_unique}-ipconfig1"
+          name                          = "${local.name_prefix}azure-gatus-dashboard-ipconfig1"
           private_ip_subnet_resource_id = azurerm_subnet.public[0].id
           create_public_ip_address      = true
-          public_ip_address_name        = module.naming[var.number_of_instances].public_ip.name_unique
+          public_ip_address_name        = "${local.name_prefix}azure-gatus-dashboard-pip"
         }
       }
     }
