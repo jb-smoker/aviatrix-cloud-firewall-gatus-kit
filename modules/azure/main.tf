@@ -49,15 +49,6 @@ resource "azurerm_route_table" "private" {
   resource_group_name = azurerm_resource_group.this.name
 }
 
-resource "azurerm_route" "default_private" {
-  name                = "Default"
-  resource_group_name = azurerm_resource_group.this.name
-  route_table_name    = azurerm_route_table.private.name
-  address_prefix      = "0.0.0.0/0"
-  next_hop_type       = "None"
-  depends_on          = [data.terracurl_request.dashboard]
-}
-
 module "vnet" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
   version = "0.8.1"
@@ -74,6 +65,14 @@ resource "azurerm_subnet" "public" {
   resource_group_name             = azurerm_resource_group.this.name
   virtual_network_name            = module.vnet.name
   address_prefixes                = [local.public_subnets[count.index]]
+  default_outbound_access_enabled = true
+}
+
+resource "azurerm_subnet" "public_gateway" {
+  name                            = "${local.name_prefix}-public-gateway-subnet"
+  resource_group_name             = azurerm_resource_group.this.name
+  virtual_network_name            = module.vnet.name
+  address_prefixes                = [cidrsubnet(var.azure_cidr, 4, 6)]
   default_outbound_access_enabled = true
 }
 
