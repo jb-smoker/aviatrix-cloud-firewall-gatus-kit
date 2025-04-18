@@ -2,7 +2,7 @@
 
 ## Description
 
-Deploys a `VPC` | `VNET` and [Gatus](https://github.com/TwiN/gatus) workload instances across one to three AZs generating traffic to configured destinations/protocols. The root module can deploy to all supported clouds, or any individual cloud with the caveat that the terraform providers for all clouds be configured -- even if that cloud is not selected for deployment. To deploy to a single cloud without passing the providers of all clouds, invoke its submodule directly.
+Deploys a `VPC` || `VNET` and [Gatus](https://github.com/TwiN/gatus) workload instances across one to three AZs generating traffic to configured destinations/protocols. The root module can deploy to all supported clouds, or any individual cloud with the caveat that the terraform providers for all clouds be configured -- even if that cloud is not selected for deployment. To deploy to a single cloud without passing the providers of all clouds, invoke its submodule directly.
 
 All deployed instances conform to the following spec:
 
@@ -10,6 +10,10 @@ All deployed instances conform to the following spec:
 | :-------- | :------------- | :------------------------------ | :----------------- |
 | **AWS**   | `24.04`        | `Docker`, `Gatus`               | `t3.nano`          |
 | **Azure** | `24.04`        | `Docker`, `Gatus`               | `Standard_B2ts_v2` |
+
+## Diagram
+
+<img src="images/diagram.png">
 
 ## Supported clouds
 
@@ -20,6 +24,28 @@ All deployed instances conform to the following spec:
 | GCP    | No        |
 | OCI    | No        |
 | Others | No        |
+
+## Resources required
+
+### AWS
+
+| Resource     | Number | Default |
+| :----------- | :----- | :------ |
+| Public IPs   | 1 to 2 | 2       |
+| VPCs         | 1      | 1       |
+| Subnets      | 2 to 6 | 4       |
+| NAT Gateways | 1      | 1       |
+| vCPUs        | 4 to 8 | 6       |
+
+### Azure
+
+| Resource     | Number | Default |
+| :----------- | :----- | :------ |
+| Public IPs   | 1 to 2 | 2       |
+| Vnets        | 1      | 1       |
+| Subnets      | 3 to 7 | 5       |
+| NAT Gateways | 1      | 1       |
+| vCPUs        | 4 to 8 | 6       |
 
 ## Compatibility
 
@@ -36,12 +62,47 @@ All deployed instances conform to the following spec:
 
 ## Usage Examples
 
-Two sets of examples are provided for each deployment option.
+The following examples offer snippets of code for calling the module(s). See [examples](https://github.com/terraform-aviatrix-modules/terraform-aviatrix-demo-spoke-workloads/tree/main/examples) for full ready to execute code (personalization required).
 
-- `_full` provides values for all available input variables.
-- `_minimal` provides only required input variables.
+### All supported clouds
 
-  See [examples](https://github.com/terraform-aviatrix-modules/terraform-aviatrix-demo-spoke-workloads/tree/main/examples)
+```terraform
+module "demo_spoke_workloads" {
+  source       = "github.com/jb-smoker/demo-spoke-workloads"
+  aws_region   = var.aws_region
+  azure_region = var.azure_region
+}
+output "aws_dashboard" {
+  value = module.demo_spoke_workloads.aws_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.aws_dashboard_public_ip}" : null
+}
+output "azure_dashboard" {
+  value = module.demo_spoke_workloads.azure_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.azure_dashboard_public_ip}" : null
+}
+```
+
+### AWS
+
+```terraform
+module "demo_spoke_workloads" {
+  source       = "github.com/jb-smoker/demo-spoke-workloads/modules/aws"
+  aws_region   = var.aws_region
+}
+output "aws_dashboard" {
+  value = module.demo_spoke_workloads.aws_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.aws_dashboard_public_ip}" : null
+}
+```
+
+### Azure
+
+```terraform
+module "demo_spoke_workloads" {
+  source       = "github.com/jb-smoker/demo-spoke-workloads/modules/azure"
+  azure_region = var.azure_region
+}
+output "azure_dashboard" {
+  value = module.demo_spoke_workloads.azure_dashboard_public_ip != null ? "http://${module.demo_spoke_workloads.azure_dashboard_public_ip}" : null
+}
+```
 
 ## Input Variables
 
