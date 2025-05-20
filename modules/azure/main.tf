@@ -173,6 +173,10 @@ data "cloudinit_config" "dashboard" {
         cloud     = "azure"
         instances = [for instance in module.gatus : instance.virtual_machine_azurerm.private_ip_addresses[0]]
         version   = var.gatus_version
+        user      = var.dashboard_user != null ? var.dashboard_user : "placeholder"
+        password  = var.dashboard_password != null ? var.dashboard_password : "placeholder"
+        cert      = var.dashboard_password != null ? var.dashboard_certificate : "placeholder"
+        key       = var.dashboard_password != null ? var.dashboard_certificate_key : "placeholder"
     })
   }
 }
@@ -201,7 +205,19 @@ module "dashboard" {
   }
   encryption_at_host_enabled = false
   zone                       = 1
-
+  # # Waiting for the fix on 0.19.1 to allow custom ssh key
+  # #  on .terraform/modules/aviatrix_cloud_firewall_gatus_kit.dashboard/modules/run-command/main.tf line 50, in resource "azurerm_virtual_machine_run_command" "this":
+  # # │   50:     for_each = try(length(var.protected_parameters) > 0, false) ? var.protected_parameters : []
+  # # │ 
+  # # │ Cannot use a list of object value in for_each. An iterable collection is required.
+  # account_credentials = {
+  #   admin_credentials = {
+  #     username                           = var.local_user
+  #     generate_admin_password_or_ssh_key = false
+  #     password_authentication_disabled   = true
+  #     ssh_keys                           = [var.dashboard_ssh_key]
+  #   }
+  # }
   network_interfaces = {
 
     network_interface_1 = {
@@ -218,16 +234,20 @@ module "dashboard" {
   }
 }
 
-data "terracurl_request" "dashboard" {
-  count  = var.dashboard ? 1 : 0
-  name   = "dashboard"
-  url    = "http://${module.dashboard[0].public_ips.network_interface_1-ip_configuration_1.ip_address}"
-  method = "GET"
+resource "terracurl_request" "dashboard" {
+  count           = var.dashboard ? 1 : 0
+  name            = "dashboard"
+  url             = var.dashboard_password == null ? "http://${module.dashboard[0].public_ips.network_interface_1-ip_configuration_1.ip_address}" : "https://${module.dashboard[0].public_ips.network_interface_1-ip_configuration_1.ip_address}"
+  method          = "GET"
+  skip_tls_verify = var.dashboard_password == null ? null : true
 
   response_codes = [200]
 
   max_retry      = 30
   retry_interval = 10
+
+  destroy_url    = "https://checkip.amazonaws.com"
+  destroy_method = "GET"
 
   depends_on = [
     module.dashboard
@@ -236,6 +256,13 @@ data "terracurl_request" "dashboard" {
 
 resource "azurerm_network_security_group" "this" {
   name                = "${local.name_prefix}sg"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+}
+
+resource "azurerm_network_security_group" "this_dashboard" {
+  count               = var.dashboard ? 1 : 0
+  name                = "${local.name_prefix}dashboard-sg"
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
 }
@@ -249,7 +276,7 @@ resource "azurerm_network_interface_security_group_association" "this_gatus" {
 resource "azurerm_network_interface_security_group_association" "this_dashboard" {
   count                     = var.dashboard ? 1 : 0
   network_interface_id      = module.dashboard[0].network_interfaces.network_interface_1.id
-  network_security_group_id = azurerm_network_security_group.this.id
+  network_security_group_id = azurerm_network_security_group.this_dashboard[0].id
 }
 
 resource "azurerm_network_security_rule" "this_rfc_1918" {
@@ -266,17 +293,32 @@ resource "azurerm_network_security_rule" "this_rfc_1918" {
   network_security_group_name = azurerm_network_security_group.this.name
 }
 
-resource "azurerm_network_security_rule" "this_inbound_tcp" {
+resource "azurerm_network_security_rule" "this_inbound_dashboard" {
   count                       = var.dashboard ? 1 : 0
   access                      = "Allow"
   direction                   = "Inbound"
-  name                        = "inbound_tcp_80"
+  name                        = "dashboard_inbound_tcp"
   priority                    = 101
   protocol                    = "Tcp"
   source_port_range           = "*"
   source_address_prefixes     = var.dashboard_access_cidr != null ? [var.dashboard_access_cidr] : ["${chomp(data.http.my_ip.response_body)}/32"]
-  destination_port_range      = 80
+  destination_port_range      = var.dashboard_password != null ? 443 : 80
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.this.name
-  network_security_group_name = azurerm_network_security_group.this.name
+  network_security_group_name = azurerm_network_security_group.this_dashboard[0].name
+}
+
+resource "azurerm_network_security_rule" "this_inbound_ssh" {
+  count                       = var.dashboard && var.dashboard_ssh_key != null ? 1 : 0
+  access                      = "Allow"
+  direction                   = "Inbound"
+  name                        = "dashboard_inbound_ssh"
+  priority                    = 102
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  source_address_prefixes     = var.dashboard_access_cidr != null ? [var.dashboard_access_cidr] : ["${chomp(data.http.my_ip.response_body)}/32"]
+  destination_port_range      = 22
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.this.name
+  network_security_group_name = azurerm_network_security_group.this_dashboard[0].name
 }

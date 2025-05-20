@@ -109,6 +109,36 @@ variable "dashboard_access_cidr" {
   }
 }
 
+variable "dashboard_user" {
+  description = "User login for the dashboard."
+  type        = string
+  default     = null
+}
+
+variable "dashboard_password" {
+  description = "Password for the dashboard."
+  type        = string
+  default     = null
+}
+
+variable "dashboard_certificate" {
+  description = "Certificate for the dashboard."
+  type        = string
+  default     = null
+}
+
+variable "dashboard_certificate_key" {
+  description = "Certificate key for the dashboard."
+  type        = string
+  default     = null
+}
+
+variable "dashboard_ssh_key" {
+  description = "SSH key for the dashboard."
+  type        = string
+  default     = null
+}
+
 variable "name_prefix" {
   description = "Prefix to apply to all resources"
   type        = string

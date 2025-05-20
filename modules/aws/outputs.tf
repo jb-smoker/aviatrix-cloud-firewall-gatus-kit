@@ -4,7 +4,12 @@ output "aws_dashboard_public_ip" {
 }
 
 output "aws_local_user_password" {
+  description = "The generated random local_user_password"
   value       = var.local_user_password != null ? null : random_password.password[0].result
   sensitive   = true
-  description = "The generated random local_user_password"
+}
+
+output "aws_vpc" {
+  description = "The AWS vpc and its outputs"
+  value       = module.vpc
 }

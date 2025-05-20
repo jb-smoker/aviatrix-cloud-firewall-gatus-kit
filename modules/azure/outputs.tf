@@ -4,7 +4,17 @@ output "azure_dashboard_public_ip" {
 }
 
 output "azure_local_user_password" {
+  description = "The generated random local_user_password"
   value       = var.local_user_password != null ? null : random_password.password[0].result
   sensitive   = true
-  description = "The generated random local_user_password"
+}
+
+output "azure_vnet" {
+  description = "The Azure vnet and its outputs"
+  value       = module.vnet
+}
+
+output "azure_gateway_subnet" {
+  description = "The Azure gateway subnet and its outputs"
+  value       = azurerm_subnet.public_gateway
 }
